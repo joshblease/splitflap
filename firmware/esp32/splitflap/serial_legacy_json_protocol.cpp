@@ -36,8 +36,8 @@ void SerialLegacyJsonProtocol::handleState(const SplitflapState& old_state, cons
 
 void SerialLegacyJsonProtocol::log(const char* msg) {
     Json body = Json::object {
-            {"type", "log"},
-            {"msg", std::string(msg)},
+            {"t", "log"},
+            {"m", std::string(msg)},
     };
     stream_.println(body.dump().c_str());
 }
@@ -56,24 +56,19 @@ void SerialLegacyJsonProtocol::loop() {
     while (stream_.available() > 0) {
         int b = stream_.read();
         if (b == 0) {
-            if (protocol_change_callback_) {
-                protocol_change_callback_(SERIAL_PROTOCOL_PROTO);
-            }
+            // Commented out to prevent swapping to protobuf protocol
+            // if (protocol_change_callback_) {
+            //     protocol_change_callback_(SERIAL_PROTOCOL_PROTO);
+            // }
             break;
         }
-        if (b == '%') {
-            bool new_sensor_test_state = latest_state_.mode != SplitflapMode::MODE_SENSOR_TEST;
-            splitflap_task_.setSensorTest(new_sensor_test_state);
-            stream_.print("{\"type\":\"sensor_test\", \"enabled\":");
-            stream_.print(new_sensor_test_state ? "true" : "false");
-            stream_.print("}\n");
-        } else if (latest_state_.mode == SplitflapMode::MODE_RUN) {
+        if (latest_state_.mode == SplitflapMode::MODE_RUN) {
             switch (b) {
                 case '@':
                     splitflap_task_.resetAll();
                     break;
                 case '#':
-                    stream_.print("{\"type\":\"no_op\"}\n");
+                    stream_.print("{\"t\":\"no_op\"}\n");
                     stream_.flush();
                     break;
                 case '=':
@@ -81,7 +76,7 @@ void SerialLegacyJsonProtocol::loop() {
                     break;
                 case '\n':
                     pending_move_response_ = true;
-                    stream_.printf("{\"type\":\"move_echo\", \"dest\":\"");
+                    stream_.printf("{\"t\":\"move\", \"d\":\"");
                     stream_.flush();
                     for (uint8_t i = 0; i < recv_count_; i++) {
                         stream_.write(recv_buffer_[i]);
@@ -132,37 +127,37 @@ void SerialLegacyJsonProtocol::sendSupervisorState(PB_SupervisorState& superviso
 
 void SerialLegacyJsonProtocol::init() {
     stream_.print("\n\n\n");
-    stream_.print("{\"type\":\"init\", \"num_modules\":");
+    stream_.print("{\"t\":\"init\", \"n\":");
     stream_.print(NUM_MODULES);
     stream_.print("}\n");
 }
 
 void SerialLegacyJsonProtocol::dumpStatus(const SplitflapState& state) {
-    stream_.print("{\"type\":\"status\", \"modules\":[");
+    stream_.print("{\"t\":\"s\", \"m\":[");
     for (uint8_t i = 0; i < NUM_MODULES; i++) {
-        stream_.print("{\"state\":\"");
+        stream_.print("{\"status\":\"");
         switch (state.modules[i].state) {
             case NORMAL:
-                stream_.print("normal");
+                stream_.print("n");
                 break;
             case LOOK_FOR_HOME:
-                stream_.print("look_for_home");
+                stream_.print("l");
                 break;
             case SENSOR_ERROR:
-                stream_.print("sensor_error");
+                stream_.print("e");
                 break;
             case PANIC:
-                stream_.print("panic");
+                stream_.print("p");
                 break;
             case STATE_DISABLED:
-                stream_.print("disabled");
+                stream_.print("d");
                 break;
         }
-        stream_.print("\", \"flap\":\"");
+        stream_.print("\", \"f\":\"");
         stream_.write(flaps[state.modules[i].flap_index]);
-        stream_.print("\", \"count_missed_home\":");
+        stream_.print("\", \"m\":");
         stream_.print(state.modules[i].count_missed_home);
-        stream_.print(", \"count_unexpected_home\":");
+        stream_.print(", \"u\":");
         stream_.print(state.modules[i].count_unexpected_home);
         stream_.print("}");
         if (i < NUM_MODULES - 1) {
