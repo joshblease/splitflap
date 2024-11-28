@@ -28,7 +28,7 @@
 
 Configuration config;
 
-SplitflapTask splitflapTask(1, LedMode::AUTO);
+SplitflapTask splitflapTask(1, LedMode::MANUAL);
 SerialTask serialTask(splitflapTask, 0);
 
 #if ENABLE_DISPLAY
@@ -54,19 +54,9 @@ void setup() {
   serialTask.begin();
 
   config.setLogger(&serialTask);
-  bool loaded = config.loadFromDisk();
 
   splitflapTask.begin();
   splitflapTask.setConfiguration(&config);
-
-  if (loaded) {
-    PB_PersistentConfiguration saved = config.get();
-    uint16_t offsets[NUM_MODULES] = {};
-    for (uint8_t i = 0; i < min(saved.module_offset_steps_count, (pb_size_t)NUM_MODULES); i++) {
-      offsets[i] = saved.module_offset_steps[i];
-    }
-    splitflapTask.restoreAllOffsets(offsets);
-  }
 
   #if ENABLE_DISPLAY
   displayTask.begin();
