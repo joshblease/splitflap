@@ -33,6 +33,7 @@ class SerialLegacyJsonProtocol : public SerialProtocol {
         Stream& stream_;
         SplitflapState latest_state_ = {};
         uint8_t recv_count_ = 0;
+        bool full_rotation_ = true;
         char recv_buffer_[NUM_MODULES] = {};
         bool pending_move_response_ = false;
         uint32_t last_sensor_print_millis_ = 0;

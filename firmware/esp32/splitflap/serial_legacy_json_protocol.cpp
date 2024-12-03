@@ -73,6 +73,11 @@ void SerialLegacyJsonProtocol::loop() {
                     break;
                 case '=':
                     recv_count_ = 0;
+                    full_rotation_ = false;
+                    break;
+                case '-':
+                    recv_count_ = 0;
+                    full_rotation_ = true;
                     break;
                 case '\n':
                     pending_move_response_ = true;
@@ -83,7 +88,7 @@ void SerialLegacyJsonProtocol::loop() {
                     }
                     stream_.printf("\"}\n");
                     stream_.flush();
-                    splitflap_task_.showString(recv_buffer_, recv_count_);
+                    splitflap_task_.showString(recv_buffer_, recv_count_, full_rotation_);
                     break;
                 case '+':
                     if (recv_count_ == 1) {
