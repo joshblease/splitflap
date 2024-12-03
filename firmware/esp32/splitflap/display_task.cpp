@@ -38,7 +38,7 @@ static const int32_t Y_OFFSET = 10;
 void DisplayTask::run() {
     tft_.begin();
     tft_.invertDisplay(1);
-    tft_.setRotation(1);
+    tft_.setRotation(3);
 
     tft_.setTextFont(0);
     tft_.setTextColor(0xFFFF, TFT_BLACK);

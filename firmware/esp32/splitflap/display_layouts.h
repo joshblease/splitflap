@@ -22,6 +22,15 @@
 
 
 // EXAMPLE LAYOUT ALGORITHMS:
+static void getLayoutPositionSingleRow(const uint8_t module_index, uint8_t* out_row, uint8_t* out_col) {
+    *out_row = module_index / DISPLAY_COLUMNS;
+
+    // Each row alternates left-to-right, then right-to-left so data can be easily chained,
+    // winding back and forth down the rows.
+    *out_col = module_index % DISPLAY_COLUMNS;
+
+}
+
 static void getLayoutPositionSingleRowZigZag(const uint8_t module_index, uint8_t* out_row, uint8_t* out_col) {
     *out_row = module_index / DISPLAY_COLUMNS;
 
@@ -74,5 +83,6 @@ static void getLayoutPosition(const uint8_t module_index, uint8_t* out_row, uint
     // Select a layout algorithm by uncommenting, or implement your own here:
 
     // getLayoutPositionDualRowZigZag(true, module_index, out_row, out_col);
-    getLayoutPositionSingleRowZigZag(module_index, out_row, out_col);
+    // getLayoutPositionSingleRowZigZag(module_index, out_row, out_col);
+    getLayoutPositionSingleRow(module_index, out_row, out_col);
 }
