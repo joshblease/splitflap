@@ -15,6 +15,7 @@
 */
 
 #include "json11.hpp"
+#include <cstring>
 
 #include "serial_legacy_json_protocol.h"
 #include "../proto_gen/splitflap.pb.h"
@@ -65,32 +66,46 @@ void SerialLegacyJsonProtocol::loop() {
         if (latest_state_.mode == SplitflapMode::MODE_RUN) {
             switch (b) {
                 case '@':
+                    flap_control_ = true;
                     splitflap_task_.resetAll();
                     break;
                 case '#':
-                    stream_.print("{\"t\":\"no_op\"}\n");
+                    recv_count_ = 0;
+                    flap_control_ = false;
+                    stream_.print("{\"t\":\"msg_set\"}\n");
                     stream_.flush();
                     break;
                 case '=':
+                    flap_control_ = true;
                     recv_count_ = 0;
                     full_rotation_ = false;
                     break;
                 case '-':
+                    flap_control_ = true;
                     recv_count_ = 0;
                     full_rotation_ = true;
                     break;
                 case '\n':
-                    pending_move_response_ = true;
-                    stream_.printf("{\"t\":\"move\", \"d\":\"");
-                    stream_.flush();
-                    for (uint8_t i = 0; i < recv_count_; i++) {
-                        stream_.write(recv_buffer_[i]);
+                    if (flap_control_) {
+                        pending_move_response_ = true;
+                        stream_.printf("{\"t\":\"move\", \"d\":\"");
+                        stream_.flush();
+                        for (uint8_t i = 0; i < recv_count_; i++) {
+                            stream_.write(recv_buffer_[i]);
+                        }
+                        stream_.printf("\"}\n");
+                        stream_.flush();
+                        splitflap_task_.showString(recv_buffer_, recv_count_, full_rotation_);
+                    } else {
+                        size_t rec_buf_len = strlen(recv_buffer_);
+                        if (rec_buf_len < 20) {
+                            memset(recv_buffer_ + rec_buf_len, ' ', 20 - rec_buf_len);
+                        }
+                        display_task_.setMessage(0, recv_buffer_);
                     }
-                    stream_.printf("\"}\n");
-                    stream_.flush();
-                    splitflap_task_.showString(recv_buffer_, recv_count_, full_rotation_);
                     break;
                 case '+':
+                    flap_control_ = true;
                     if (recv_count_ == 1) {
                         for (uint8_t i = 1; i < NUM_MODULES; i++) {
                             recv_buffer_[i] = recv_buffer_[0];
@@ -100,21 +115,30 @@ void SerialLegacyJsonProtocol::loop() {
                     break;
                 case '>':
                     // TODO: make the index configurable
+                    flap_control_ = true;
                     splitflap_task_.increaseOffsetTenth(0);
                     break;
                 case '<':
                     // TODO: make the index configurable
+                    flap_control_ = true;
                     splitflap_task_.increaseOffsetHalf(0);
                     break;
                 case '\\':
+                    flap_control_ = true;
                     splitflap_task_.saveAllOffsets();
                     break;
                 case '\r':
                     // Ignore
                     break;
                 default:
-                    if (recv_count_ > NUM_MODULES - 1) {
-                        break;
+                    if (flap_control_) {
+                        if (recv_count_ > NUM_MODULES - 1) {
+                            break;
+                        }
+                    } else {
+                        if (recv_count_ > 19) {
+                            break;
+                        }
                     }
                     recv_buffer_[recv_count_] = b;
                     recv_count_++;

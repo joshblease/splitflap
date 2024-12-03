@@ -20,6 +20,7 @@
 #include "../core/logger.h"
 #include "../core/splitflap_task.h"
 #include "../proto_gen/splitflap.pb.h"
+#include "display_task.h"
 
 #define SERIAL_PROTOCOL_LEGACY 0
 #define SERIAL_PROTOCOL_PROTO 1
@@ -27,7 +28,7 @@
 typedef std::function<void(uint8_t)> ProtocolChangeCallback;
 class SerialProtocol : public Logger {
     public:
-        SerialProtocol(SplitflapTask& splitflap_task) : Logger(), splitflap_task_(splitflap_task) {}
+        SerialProtocol(SplitflapTask& splitflap_task, DisplayTask& display_task) : Logger(), splitflap_task_(splitflap_task), display_task_(display_task) {}
         virtual ~SerialProtocol(){}
 
         virtual void loop() = 0;
@@ -41,5 +42,6 @@ class SerialProtocol : public Logger {
     
     protected:
         SplitflapTask& splitflap_task_;
+        DisplayTask& display_task_;
         ProtocolChangeCallback protocol_change_callback_;
 };

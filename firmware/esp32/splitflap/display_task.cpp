@@ -144,7 +144,7 @@ void DisplayTask::run() {
         }
 
         const int message_height = 10;
-        const int message_text_size = 1;
+        const int message_text_size = 3;
         bool redraw_messages = false;
         {
             SemaphoreGuard lock(semaphore_);

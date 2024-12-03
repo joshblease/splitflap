@@ -17,6 +17,7 @@
 
 #include "PacketSerial.h"
 
+#include "display_task.h"
 #include "serial_protocol.h"
 #include "../proto_gen/splitflap.pb.h"
 
@@ -33,7 +34,7 @@
 
 class SerialProtoProtocol : public SerialProtocol {
     public:
-        SerialProtoProtocol(SplitflapTask& splitflap_task, Stream& stream);
+        SerialProtoProtocol(SplitflapTask& splitflap_task, Stream& stream, DisplayTask& display_task);
         ~SerialProtoProtocol() {}
         void log(const char* msg) override;
         void loop() override;

@@ -13,17 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+#include "display_task.h"
 #include "serial_task.h"
 
 #include "../core/uart_stream.h"
 
-SerialTask::SerialTask(SplitflapTask& splitflap_task, const uint8_t task_core) :
+SerialTask::SerialTask(SplitflapTask& splitflap_task, const uint8_t task_core, DisplayTask& display_task) :
         Task("Serial", 16000, 1, task_core),
         Logger(),
         splitflap_task_(splitflap_task),
         stream_(),
-        legacy_protocol_(splitflap_task_, stream_),
-        proto_protocol_(splitflap_task_, stream_) {
+        legacy_protocol_(splitflap_task_, stream_, display_task),
+        proto_protocol_(splitflap_task_, stream_, display_task) {
     log_queue_ = xQueueCreate(10, sizeof(std::string *));
     assert(log_queue_ != NULL);
 

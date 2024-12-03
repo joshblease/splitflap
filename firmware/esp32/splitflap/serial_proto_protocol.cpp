@@ -19,6 +19,7 @@
 
 #include "pb_encode.h"
 #include "pb_decode.h"
+#include "display_task.h"
 #include "serial_proto_protocol.h"
 
 static SerialProtoProtocol* singleton_for_packet_serial = 0;
@@ -26,8 +27,8 @@ static SerialProtoProtocol* singleton_for_packet_serial = 0;
 static const uint16_t MIN_STATE_INTERVAL_MILLIS = 100;
 static const uint16_t PERIODIC_STATE_INTERVAL_MILLIS = 5000;
 
-SerialProtoProtocol::SerialProtoProtocol(SplitflapTask& splitflap_task, Stream& stream) :
-        SerialProtocol(splitflap_task),
+SerialProtoProtocol::SerialProtoProtocol(SplitflapTask& splitflap_task, Stream& stream, DisplayTask& display_task) :
+        SerialProtocol(splitflap_task, display_task),
         stream_(stream) {
     packet_serial_.setStream(&stream);
 

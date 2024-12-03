@@ -16,11 +16,12 @@
 #pragma once
 
 #include "serial_protocol.h"
+#include "display_task.h"
 #include "../proto_gen/splitflap.pb.h"
 
 class SerialLegacyJsonProtocol : public SerialProtocol {
     public:
-        SerialLegacyJsonProtocol(SplitflapTask& splitflap_task, Stream& stream) : SerialProtocol(splitflap_task), stream_(stream) {}
+        SerialLegacyJsonProtocol(SplitflapTask& splitflap_task, Stream& stream, DisplayTask& display_task) : SerialProtocol(splitflap_task, display_task), stream_(stream) {}
         ~SerialLegacyJsonProtocol(){}
         void log(const char* msg) override;
         void loop() override;
@@ -34,6 +35,7 @@ class SerialLegacyJsonProtocol : public SerialProtocol {
         SplitflapState latest_state_ = {};
         uint8_t recv_count_ = 0;
         bool full_rotation_ = true;
+        bool flap_control_ = true;
         char recv_buffer_[NUM_MODULES] = {};
         bool pending_move_response_ = false;
         uint32_t last_sensor_print_millis_ = 0;
