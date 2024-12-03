@@ -50,8 +50,8 @@ const uint8_t flaps[NUM_FLAPS] = {
   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
   '.',
-  '!',
   '?',
+  '!',
 };
 
 // Flap option 2: v2 flaps (52 per module)
